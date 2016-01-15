@@ -1,0 +1,190 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Scanner;
+
+/**
+ * A representation of a tutee in a peer tutoring database.
+ * 
+ * @author Jerry Liu
+ * @version 1.0 2015-01-27
+ */
+public class Tutee extends Student
+{
+    /*
+     * class fields
+     */
+    public static final int INDEX_NUMBER = 3;    
+
+    /*
+     * constructors
+     */
+    
+    /**
+     * Creates a new tutee based on a student number.
+     */
+    public Tutee(int number)
+    {
+        super(number, false);
+    } // end of constructor Tutee(int number)
+
+    /*
+     * static methods
+     */
+    
+    /**
+     * Shows all tutees 20 at a time.
+     */
+    public static void showTutees()
+    {
+        Scanner scanner = new Scanner(System.in);
+        // show how many at a time?
+        int shown = TutoringDBMS.SHOW;
+        if (numberOfTutees() < shown)
+            shown = numberOfTutees();
+            
+        System.out.println("CURRENT TUTEES (showing " + shown + " of " + numberOfTutees() + "):");      
+        try
+        {
+            BufferedReader reader = new BufferedReader(new FileReader(Student.fileTutee));
+            String input = "";
+            String[] data;
+            
+            // show all tutees
+            Tutee current;
+            String output = "";
+            int count = 0;
+            int index = 1;
+            while ((input = reader.readLine()) != null)
+            {
+                // 20 at a time
+                if (count == TutoringDBMS.SHOW)
+                {
+                    count = 0;
+                    System.out.println("Press ENTER to show more.");
+                    scanner.next();
+                } // end of if (count == TutoringDBMS.SHOW)
+                count++;
+                data = input.split("\\|");
+                
+                current = new Tutee(Integer.parseInt(data[INDEX_NUMBER]));
+                
+                // the specific output for each tutee
+                System.out.print(index + ". ");
+                System.out.print(current.getFirstName() + " " + current.getLastName());
+                System.out.print(" free on " + new String(current.getDaysFree()));
+                System.out.print(" for " + current.getCourses());
+                System.out.println("");
+                index++;
+            } // end of while ((input = reader.readLine()) != null)
+            
+        }
+        catch (IOException error)
+        {
+        
+        } // end of try-catch block
+    } // end of method showTutees()
+    
+    /**
+     * Gets all registered tutees.
+     * 
+     * @return an array of all registered tutees
+     */
+    public static Student[] getAllTutees()
+    {
+        Student[] tutee = new Student[numberOfTutees()];
+        String[] data;
+        int index = 0;
+        try
+        {
+            BufferedReader reader = new BufferedReader(new FileReader(Student.fileTutee));
+            String input = "";
+            while ((input = reader.readLine()) != null)
+            {
+                data = input.split("\\|");
+                tutee[index] = new Student(Integer.parseInt(data[INDEX_NUMBER]), false);
+                index++;
+            } // end of while ((input = reader.readLine()) != null)
+            reader.close();
+        }
+        catch (IOException error)
+        {} // end of try-catch block
+        return tutee;
+    } // end of method getAllTutees()
+  
+    /**
+     * Presents prompts and information to delete a tutee from the system.
+     */
+    public static void deleteTutee()
+    {
+        // show tutees
+        Scanner scanner = new Scanner(System.in);
+        showTutees();
+        System.out.print("Delete which tutee? (0 to exit) ");
+        
+        int selection = -1;
+        String input = "";
+        do
+        {
+            input = scanner.nextLine();
+            try
+            {
+                selection = Integer.parseInt(input);
+            }
+            catch (NumberFormatException error)
+            {} // end of try-catch block
+            
+        }
+        while (selection < 0 || selection > Tutee.numberOfTutees());
+        
+        if (selection == 0) return;
+        
+        // read all tutees into array
+        try
+        {
+            BufferedReader reader = new BufferedReader(new FileReader(Student.fileTutee));
+            String[] line = new String[numberOfTutees()];
+            for (int i = 0; i < line.length; i++)
+            {
+                line[i] = reader.readLine();
+            } // end of for (int i = 0; i < line.length; i++)
+            reader.close();
+            // write all, exclude the deleted one
+            PrintWriter writer = new PrintWriter(Student.fileTutee);
+            for (int i = 0; i < line.length; i++)
+            {
+                if (i != selection -1)
+                    writer.println(line[i]);
+            } // end of for (int i = 0; i < line.length; i++)
+            writer.close();
+        }
+        catch (IOException error)
+        {} // end of try-catch block
+        System.out.println("Deletion successful.");
+    } // end of method deleteTutee()
+    
+    /**
+     * Gets the number of registered tutees.
+     * 
+     * @return the number of registered tutees
+     */
+    public static int numberOfTutees()
+    {
+        int count = 0;
+        try
+        {
+            BufferedReader reader = new BufferedReader(new FileReader(Student.fileTutee));
+            String input = "";
+            // count number of lines
+            while ((input = reader.readLine()) != null)
+            {
+                count++;
+            } // end of while ((input = reader.readLine()) != null)
+            reader.close();
+        }
+        catch (IOException error)
+        {} // end of try-catch block
+        return count;
+    } // end of method numberOfTutees()
+} // end of class Tutee

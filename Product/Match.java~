@@ -1,0 +1,272 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Scanner;
+
+/**
+ * A representation of a match in a peer tutoring program. Also is
+ * a node in a linked list.
+ * 
+ * @author Jerry Liu
+ * @version 1.1 2015-03-09
+ */
+public class Match
+{
+    /*
+     * class fields
+     */
+    /**
+     * The file holding data on the current matches.
+     */
+    public static String fileMatch = "0_Match.txt";
+    
+    /*
+     * instance fields
+     */
+    private Student tutor;
+    private Student tutee;
+    private char[] meetDays;
+    private String courses;
+    private Match next = null;
+
+    /*
+     * constructors
+     */
+    
+    /**
+     * Constructs a match with no values.
+     */
+    public Match()
+    {
+    
+    }
+    
+    /**
+     * Creates a new match given a line from the text file database.
+     * 
+     * @param input the line representing this match in the database
+     */
+    public Match(String input)
+    {
+        String[] data = input.split("\\|");
+        // initialise instance variables
+        tutor = Student.find(TutoringDBMS.tutorHead, Integer.parseInt(data[1]));
+        tutee = Student.find(TutoringDBMS.tuteeHead, Integer.parseInt(data[2]));
+        meetDays = data[0].toCharArray();
+        courses = data[3];
+    } // end of constructor Match(String input)
+    
+    /**
+     * Creates a copy of a given match.
+     * 
+     * @param match the match to be copied
+     */
+    public Match(Match match)
+    {
+        tutor = match.tutor;
+        tutee = match.tutee;
+        meetDays = match.meetDays;
+        courses = match.courses;
+        if (match.next != null)
+            next = new Match(match.next);
+    } // end of constructor Match(Match match)
+    
+    /*
+     * static methods
+     */
+    
+    /**
+     * Removes a match from a linked list of matches.
+     * 
+     * @param head the head of the linked list
+     * @param index the number in the linked list of the match to be
+     * removed (starts at 1)
+     * @return the head of the new linked list after removal of the 
+     * specified match
+     */
+    public static Match remove(Match head, int index)
+    {
+        Match current = head;
+        int count = 0;
+        if (index == 1)
+        {
+            head = head.getNext();
+            return head;
+        } // end of if (index == 1)
+        while (current.getNext() != null)
+        {
+            if (count == index - 1)
+            {
+                current.add(current.getNext().getNext());
+            } // end of if (count == index - 1)
+            count++;
+            current = current.getNext();
+        } // end of while (current.getNext() != null)
+        return head;
+    } // end of method remove(Match head, int index)
+         
+    /*
+     * accessors
+     */
+    
+    /**
+     * Returns the length of the linked list starting at this match.
+     * 
+     * @return the length of the linked list
+     */
+    public int length()
+    {
+        int count = 0;
+        Match current = this;
+        while (current != null)
+        {
+            count++;
+            current = current.getNext();
+        } // end of while (current != null)
+        return count;
+    } // end of method length()
+    
+    /**
+     * Gets the match that follows this match.
+     * 
+     * @return the next match
+     */
+    public Match getNext()
+    {
+        return next;
+    } // end of method getNext()
+    
+    /**
+     * Gets the tutor in this match.
+     * 
+     * @return the tutor in this match
+     */
+    public Student getTutor()
+    {
+        return tutor;
+    } // end of method getTutor()
+    
+    /**
+     * Gets the tutee in this match.
+     * 
+     * @return the tutee in this match
+     */
+    public Student getTutee()
+    {
+        return tutee;
+    } // end of method getTutee()
+    
+    /**
+     * Gets the meet days for this match.
+     * 
+     * @return the meet days for this match
+     */
+    public char[] getMeetDays()
+    {
+        return meetDays;
+    } // end of method getMeetDays()
+    
+    /**
+     * Gets the courses for this match.
+     * 
+     * @return the courses for this match
+     */
+    public String getCourses()
+    {
+        return courses;
+    } // end of method getCourses()
+    
+    /**
+     * Returns a string representation of this match.
+     * 
+     * @return the string representation of this match
+     */
+    public String toString()
+    {
+        return tutor.getFirstName() + " "
+            + tutor.getLastName()
+            + " tutoring " 
+            + tutee.getFirstName() + " "
+            + tutee.getLastName()
+            + " in "
+            + courses
+            + " on "
+            + new String(meetDays);
+    } // end of method toString()
+    
+    /*
+     * mutators
+     */
+    
+    /**
+     * Sets the next match that follows this match to a given match.
+     * 
+     * @param next the match following this match
+     */
+    public void add(Match next)
+    {
+        this.next = next;
+    }
+    
+    /**
+     * Sets the next match to a node which only contains the data (not
+     * the next node) of the given match.
+     * 
+     * @param match the given match whose data is to be used
+     */
+    public void nextData(Match match)
+    {
+        this.next = match;
+        next.add(null);
+    } // end of method nextData(Match match)
+    
+    /**
+     * Sets the data of this match (not the next node) to the data of
+     * a given match.
+     * 
+     * @param match the match whose data is to be used
+     */
+    public void copyData(Match match)
+    {
+        tutor = match.tutor;
+        tutee = match.tutee;
+        meetDays = match.meetDays;
+        courses = match.courses;
+        next = null;
+    } // end of method copyData(Match match)
+    
+    /**
+     * Sets the meet days for this match.
+     * 
+     * @param meetDays the new meet days for this match
+     */
+    public void setMeetDays(char[] meetDays)
+    {
+        this.meetDays = meetDays;
+    } // end of method setMeetDays(char[] meetDays)
+    
+    /**
+     * Sets the courses covered in this match.
+     * 
+     * @param courses the courses covered in this match
+     */
+    public void setCourse(String courses)
+    {
+        this.courses = courses;
+    } // end of method setCourse(String courses)
+} // end of class Match
+
+/*
+ * unused code
+ */
+/*
+ * public void setTutor(Student tutor)
+    {
+        this.tutor = tutor;
+    } // end of 
+    public void setTutee(Tutee tutee)
+    {
+        this.tutee = tutee;
+    } // end of 
+ */

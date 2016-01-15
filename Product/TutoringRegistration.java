@@ -1,0 +1,839 @@
+import java.awt.FlowLayout;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.lang.NumberFormatException;
+import java.text.NumberFormat;
+import java.util.EventListener;
+import javax.swing.ButtonGroup;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.JApplet;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
+import javax.swing.text.NumberFormatter;
+
+/**
+ * An applet that allows the user to register for a peer tutoring program.
+ * 
+ * @author Jerry Liu
+ * @version 1.0 2014-01-27
+ */
+public class TutoringRegistration extends JApplet implements ActionListener
+{
+    /*
+     * class fields
+     */
+    
+    private static NumberFormat format = NumberFormat.getIntegerInstance();
+    
+    private static final String LEFT = SpringLayout.WEST;
+    private static final String RIGHT = SpringLayout.EAST;
+    private static final String TOP = SpringLayout.NORTH;
+    private static final String BOT = SpringLayout.SOUTH;
+    
+    private static final int LEFT_OF_TEXTFIELD = 150;
+    
+    private static final String[] DAY = 
+        {"Mon.", "Tue.", "Wed.", "Thu.", "Fri."};
+    
+    private static final String[] COURSE = 
+    {
+        "MPM1 - Math",// math
+        "MPM2 - Math",
+        "MCR3 - Functions",
+        "MCV4 - Calculus and Vectors",
+        "MDM4 - Data management",
+        "MHF4 - Advanced Functions",
+        "ENG1 - English",// english
+        "ENG2 - English",
+        "ENG3 - English",
+        "ENG4 - English",
+        "FSF1 - French",// french
+        "FSF2 - French",
+        "FSF3 - French",
+        "FSF4 - French",
+        "SNC1 - Science",// science
+        "SNC2 - Science",
+        "SBI3 - Biology",
+        "SBI4 - Biology",
+        "SPH3 - Physics",
+        "SPH4 - Physics",
+        "SCH3 - Chemistry",
+        "SCH4 - Chemistry",
+        "CGC1 - Geography", // social studies
+        //geo10
+        //geo11
+        "CGW4 - World Issues",
+        "CHC2 - History",
+        "CHA3 - History",
+        "CHY4 - History",
+        "CIE3 - Economics",
+        "CIA4 - Economics",
+        //HL econ
+        "ICS2 - Computer Science",// tech
+        "ICS3 - Computer Science",
+        "ICS4 - Computer Science"     
+    };
+    
+    private static final String[] EXCLUDE =
+        {"MR. ", "MR.", "MRS. ", "MRS.", "MS. ", "MS."};
+    
+    private static SpringLayout layout = new SpringLayout();
+    private static int numberOfCourses = 1;
+    
+    /*
+     * declaring commponents of the applet
+     */
+    
+    // name
+    private static JTextField firstNameField;
+    private static JLabel firstNameLabel;
+    private static JTextField lastNameField;
+    private static JLabel lastNameLabel;
+    // gender
+    private static JRadioButton maleButton;
+    private static JRadioButton femaleButton;
+    private static JLabel genderLabel;
+    private static ButtonGroup genderGroup;
+    // other personal
+    private static JTextField studentNumberField;
+    private static JLabel studentNumberLabel;
+    private static JTextField teacherField;
+    private static JLabel teacherLabel;
+    private static JTextField emailField;
+    private static JLabel emailLabel;
+    // grade
+    private static JRadioButton[] gradeButton;
+    private static JLabel gradeLabel;
+    private static ButtonGroup gradeGroup;
+    // tutor or tutee
+    private static JLabel tutorTuteeLabel;
+    private static JRadioButton tutorButton;
+    private static JRadioButton tuteeButton;
+    private static ButtonGroup tutorTuteeGroup;
+    // days free
+    private static JLabel daysFreeLabel;
+    private static JCheckBox[] day;
+    // courses
+    private static JLabel coursesLabel;
+    private static JLabel coursesLabel2;
+    private static JButton addButton;
+    private static JComboBox[] course;
+    private static JButton[] minusButton;
+    // other
+    private static JLabel edit;
+    private static JButton submitButton;
+    private static JButton okButton;
+    
+    
+    
+
+    /**
+     * Initializes the applet.
+     */
+    public void init()
+    {
+        try 
+        {
+            javax.swing.SwingUtilities.invokeAndWait
+            (new Runnable() 
+            {
+                public void run() 
+                {
+                    paint();
+                } // end of method run()
+            }
+            );
+        } // end of try block
+        catch (Exception e) 
+        {
+            System.err.println("createGUI didn't successfully complete");
+        } // end of catch block
+    } // end of method init()
+    
+    /**
+     * Creates the GUI.
+     */
+    private void paint()
+    {
+        /*
+         * create components
+         * (assigning reference points)
+         */
+        createComponents();
+
+        /*
+         * establish layout
+         */
+        setLayout(layout);
+        
+        /*
+         * add components to applet
+         */
+        addComponents();
+
+        /*
+         * edit layout
+         */
+        layoutComponents();        
+       
+        // focus
+        firstNameField.setFocusable(true);
+        
+        
+
+        
+        // listeners for disabling of submit button
+        /*documentListener(firstNameField);
+        documentListener(lastNameField);
+        documentListener(studentNumberField);
+        documentListener(teacherField);
+        documentListener(emailField);*/
+        
+        
+    } // end of method paint()
+    
+    public void actionPerformed(ActionEvent actionEvent)
+    {
+        // when submit is pressed
+        if (actionEvent.getSource().equals(submitButton))
+        {
+            // if the information in the form is valid
+            if (validateSubmit()) 
+            {
+                edit.setVisible(false);
+                submitAndReview();                
+            }
+            // if not, make visible the lable that prompts for an edit in the form
+            else 
+            {
+                edit.setVisible(true);
+            } // end of if (validateSubmit()) 
+            
+        } // end of if (actionEvent.getSource().equals(submitButton))
+        
+        // when the add buttons for the courses are pressed
+        if (actionEvent.getSource().equals(addButton))
+        {
+            addCourse();
+        } // end of if (actionEvent.getSource().equals(addButton))
+        
+        // when any of the remove buttons for the courses are pressed
+        for (int i = 0; i < numberOfCourses; i++)
+        {
+            if (actionEvent.getSource().equals(minusButton[i]))
+            {
+                removeCourse(i);
+            } // end of if (actionEvent.getSource().equals(minusButton[i]))             
+        } // end of for (int i = 0; i < numberOfCourses; i++)
+    } // end of method actionPerformed(ActionEvent actionEvent)
+    
+    private void submitAndReview()
+    {        
+        // hide the applet
+        //setVisible(false);
+        // gather the data, make everything capital
+        String data = "";
+        
+        // name
+        data += firstNameField.getText().toUpperCase() + "|";
+        data += lastNameField.getText().toUpperCase() + "|";
+        
+        // gender
+        if (maleButton.isSelected())
+        {
+            data += "M|";
+        }
+        else 
+        {
+            data += "F|";
+        } // end of if (maleButton.isSelected())
+        data += studentNumberField.getText() + "|";
+        
+        // teacher
+        String teacher = teacherField.getText().toUpperCase();        
+        // exclude titles from teacher name
+        for (int i = 0; i < EXCLUDE.length; i++)
+        {
+            teacher.replace(EXCLUDE[i], "");
+        }
+        data += teacher + "|";
+        
+        // email
+        data += emailField.getText().toUpperCase() + "|";
+        
+        // grade
+        for (int i = 0; i < gradeButton.length; i++)
+        {
+            if (gradeButton[i].isSelected())
+            {
+                data += (i + 9) + "|";
+            } // end of if (gradeButton[i].isSelected())
+        } // end of for (int i = 0; i < gradeButton.length; i++)
+        
+        // tutor or tutee
+        if (tutorButton.isSelected())
+        {
+            data += "1|";
+        }
+        else 
+        {
+            data += "0|";
+        } // end of if (tutorButton.isSelected())
+        
+        // days free
+        for (int i = 0; i < DAY.length; i++)
+        {
+            if (day[i].isSelected())
+            {
+                data += "1";// 1 means free on day
+            }
+            else
+            {
+                data += "0";
+            } // end of if (day[i].isSelected())
+        } // end of for (int i = 0; i < DAY.length; i++)
+        data += "|";
+        
+        // courses
+        for (int i = 0; i < course.length; i++)
+        {
+            data += ((String)course[i].getSelectedItem()).substring(0, 4);
+            if (i != course.length - 1)
+                data += ", ";
+        } // end of for (int i = 0; i < course.length; i++)
+        // no attendance recorded yet, so 0
+        data += "|0";
+        
+        // this can check if the form works
+        add(new JLabel(data));
+        // to make the above label visible
+        firstNameLabel.setVisible(false);//
+        firstNameField.setVisible(false);//
+        lastNameLabel.setVisible(false);//
+        lastNameField.setVisible(false);//
+        validate();
+    } // end of method submitAndReview()
+    
+    /**
+     * Adds a course selection combo box and appropriate minus button.
+     */
+    private void addCourse()
+    {
+        // preserve state of previous combo boxes
+        String[] choice = preserveState();
+        // remove previous minus buttons and combo boxes
+        removePrevious();
+        
+        numberOfCourses++;
+        
+
+        // reorganize the courses section
+        // assigning new references
+        course = new JComboBox[numberOfCourses];
+        minusButton = new JButton[numberOfCourses];
+        for (int i = 0; i < numberOfCourses; i++)
+        {
+            course[i] = new JComboBox(COURSE);
+            minusButton[i] = new JButton("-");
+        } // end of for (int i = 0; i < numberOfCourses; i++)
+        
+        // assign state to previous combo boxes
+        for (int i = 0; i < choice.length; i++)
+        {
+            course[i].setSelectedItem(choice[i]);
+        } // end of for (int i = 0; i < choice.length; i++)
+        
+        // adding to applet
+        for (int i = 0; i < numberOfCourses; i++)
+        {
+            add(course[i]);
+            add(minusButton[i]);
+        } // end of for (int i = 0; i < numberOfCourses; i++)
+        
+        // laying out changed components
+        for (int i = 0; i < numberOfCourses; i++)
+        {
+            if (i == 0)
+            {
+                layout.putConstraint(LEFT, course[i], LEFT_OF_TEXTFIELD, LEFT, this);
+                layout.putConstraint(TOP, course[i], 5, BOT, day[0]); 
+            }
+            else
+            {
+                layout.putConstraint(LEFT, course[i], LEFT_OF_TEXTFIELD, LEFT, this);
+                layout.putConstraint(TOP, course[i], 5, BOT, course[i - 1]);
+            } // end of if (i == 0)
+
+            layout.putConstraint(LEFT, minusButton[i], 5, RIGHT, course[0]);
+            layout.putConstraint(TOP, minusButton[i], 0, TOP, course[i]);
+            
+        } // end of for (int i = 0; i < numberOfCourses; i++)
+        layout.putConstraint(TOP, addButton, 0, TOP, course[course.length - 1]);
+        layout.putConstraint(LEFT, addButton, 50, RIGHT, course[course.length - 1]);
+        
+        // listeners for minus buttons
+        for (int i = 0; i < numberOfCourses; i++)
+        {
+            //minusButton[i].setActionCommand("-");
+            minusButton[i].addActionListener(this);
+        } // end of for (int i = 0; i < numberOfCourses; i++)
+        repaint();
+        validate();
+    } // end of method addCourse()
+    
+    /**
+     * Removes a course selection combo box and appropriate minus button.
+     */
+    private void removeCourse(int index)
+    {        
+        // preserve state of previous combo boxes
+        String[] choice = preserveState();
+        // remove previous minus buttons and combo boxes
+        removePrevious();
+       
+        // gets rid of the removed selection
+        for (int i = index; i < numberOfCourses; i++)
+        {
+            // to avoid array out of bounds
+            if (i != (numberOfCourses - 1))choice[i] = choice[i + 1];            
+        } // end of for (int i = index; i < numberOfCourses; i++)
+        
+        // remove the specific combo box
+        remove(course[index]);
+                
+        numberOfCourses--;
+        
+        // reorganize the courses section
+        // assigning new references
+        course = new JComboBox[numberOfCourses];
+        // can't have minus button when only one course combo box
+        if (numberOfCourses != 1) minusButton = new JButton[numberOfCourses];
+        
+        // new minus buttons and new combo boxes
+        for (int i = 0; i < numberOfCourses; i++)
+        {
+            course[i] = new JComboBox(COURSE);
+            if (numberOfCourses != 1) minusButton[i] = new JButton("-");
+        } // end of for (int i = 0; i < numberOfCourses; i++)
+        
+        // assign state to previous combo boxes (not removed ones)        
+        for (int i = 0; i < numberOfCourses; i++)
+        {
+            course[i].setSelectedItem(choice[i]);
+        } // end of for (int i = 0; i < numberOfCourses; i++)
+        
+        // adding to applet
+        for (int i = 0; i < numberOfCourses; i++)
+        {
+            add(course[i]);
+            if (numberOfCourses != 1) add(minusButton[i]);
+        } // end of for (int i = 0; i < numberOfCourses; i++)
+     
+        // laying out changed components
+        for (int i = 0; i < numberOfCourses; i++)
+        {
+            if (i == 0)
+            {
+                layout.putConstraint(LEFT, course[i], LEFT_OF_TEXTFIELD, LEFT, this);
+                layout.putConstraint(TOP, course[i], 5, BOT, day[0]); 
+            }
+            else
+            {
+                layout.putConstraint(LEFT, course[i], LEFT_OF_TEXTFIELD, LEFT, this);
+                layout.putConstraint(TOP, course[i], 5, BOT, course[i - 1]);
+            } // end of if (i == 0)
+            if (numberOfCourses != 1)
+            {
+                layout.putConstraint(LEFT, minusButton[i], 5, RIGHT, course[0]);
+                layout.putConstraint(TOP, minusButton[i], 0, TOP, course[i]);
+            } // end of if (numberOfCourses != 1)
+        } // end of for (int i = 0; i < numberOfCourses; i++)
+        layout.putConstraint(TOP, addButton, 0, TOP, course[course.length - 1]);
+        layout.putConstraint(LEFT, addButton, 50, RIGHT, course[course.length - 1]);
+        
+        // listeners for minus buttons
+        for (int i = 0; i < numberOfCourses; i++)
+        {
+            //minusButton[i].setActionCommand("-");
+            minusButton[i].addActionListener(this);
+        } // end of for (int i = 0; i < numberOfCourses; i++)
+        repaint();
+        validate();
+    } // end of method removeCourse(int index)
+    
+    private String[] preserveState()
+    {   
+        String[] choice = new String[numberOfCourses];
+        for (int i = 0; i < numberOfCourses; i++)
+        {
+            choice[i] = (String)(course[i].getSelectedItem());
+        } // end of for (int i = 0; i < numberOfCourses; i++)
+        
+        return choice;
+    } // end of method preserveState()
+    
+    private void removePrevious()
+    {
+        // remove all minus buttons
+        if (numberOfCourses != 1)
+        {
+            for (int i = 0; i < numberOfCourses; i++)
+            {
+                remove(minusButton[i]);
+            } // end of for (int i = 0; i < numberOfCourses; i++)
+        } // end of if (numberOfCourses != 1)
+        // remove previous combo boxes
+        for (int i = 0; i < numberOfCourses; i++)
+        {
+            remove(course[i]);
+        } // end of for (int i = 0; i < numberOfCourses; i++)
+    } // end of method removePrevious()
+    
+    private boolean validateSubmit()
+    {
+        // disable submit if text fields are empty
+        // name
+        if (firstNameField.getText().equals("")) return false;
+        if (lastNameField.getText().equals("")) return false;
+        
+        // student number must be 9 digits
+        try
+        {
+            int number = Integer.parseInt(studentNumberField.getText());
+            if (number < 100000000 || number > 999999999) return false;
+        }
+        catch (NumberFormatException error)
+        {
+            return false;
+        }
+        if (studentNumberField.getText().equals("")) return false;
+        
+        // teacher
+        if (teacherField.getText().equals("")) return false;
+        
+        // email
+        if (emailField.getText().length() < 5) return false;
+        // other email specific checks
+        String email = emailField.getText();
+        if (!email.contains("@") && !email.contains(".")) return false;
+        String[] part = email.split("@");
+        if (part.length != 2) return false;
+        if (part[0].length() == 0 || part[1].length() == 0) return false;
+        part = part[1].split("\\.");
+        if (part.length < 2) return false;
+        if (part[part.length - 1].length() == 0 || part[part.length - 2].length() == 0)
+            return false;
+        
+        // checking radio buttons
+        if (!maleButton.isSelected() && !femaleButton.isSelected()) return false;
+        if (!gradeButton[0].isSelected() && !gradeButton[1].isSelected() 
+            && !gradeButton[2].isSelected() && !gradeButton[3].isSelected()) return false;
+        if (!tutorButton.isSelected() && !tuteeButton.isSelected()) return false;
+        
+        // checking check boxes
+        if (!day[0].isSelected() && !day[1].isSelected() && !day[2].isSelected() 
+            && !day[3].isSelected() && !day[4].isSelected()) return false;
+            
+        // checking courses
+        if (numberOfCourses > 1)
+        {
+            String[] choice = new String[numberOfCourses];
+            for (int i = 0; i < numberOfCourses; i++)
+            {
+                choice[i] = (String)(course[i].getSelectedItem());
+            } // end of for (int i = 0; i < numberOfCourses; i++)
+            // checking if selected courses have repeats
+            for (int i = 0; i < choice.length; i++)
+            {
+                if (i != choice.length - 1)
+                {
+                    for (int j = i + 1; j < choice.length; j++)
+                    {
+                        if (choice[i].equals(choice[j])) return false;
+                    } // end of for (int j = i + 1; j < choice.length; j++)
+                } // end of if (i != choice.length - 1)
+            } // end of for (int i = 0; i < choice.length; i++)
+        } // end of if (numberOfCourses > 1)
+        
+        // if got here, then valid info
+        return true;
+    } // end of method validateSubmit()
+    
+    private void createComponents()
+    {
+        // name
+        firstNameLabel = new JLabel("First name:");
+        firstNameField = new JTextField(20);
+        
+        lastNameLabel = new JLabel("Last name:");
+        lastNameField = new JTextField(20);
+        
+        // gender
+        genderLabel = new JLabel("Gender:");
+        maleButton = new JRadioButton("Male");
+        femaleButton = new JRadioButton("Female");
+        genderGroup = new ButtonGroup();
+        genderGroup.add(maleButton);
+        genderGroup.add(femaleButton);
+        
+        // other personal
+        studentNumberLabel = new JLabel("Student Number:");        
+        
+        // student number field
+        studentNumberField = new JTextField();
+        studentNumberField.setColumns(9);
+        
+        // teacher
+        teacherLabel = new JLabel("Homeroom Teacher:");
+        teacherField = new JTextField(20);
+        
+        // email
+        emailLabel = new JLabel("Your Email:");
+        emailField = new JTextField(20);
+
+        // grade
+        gradeGroup = new ButtonGroup();
+        gradeButton = new JRadioButton[4];
+        for (int i = 0; i < 4; i++)
+        {
+            gradeButton[i] = new JRadioButton("" + (i+9));
+            gradeGroup.add(gradeButton[i]);
+        } // end of for (int i = 0; i < 4; i++)
+        gradeLabel = new JLabel("Grade:");
+        
+        // tutor or tutee
+        tutorTuteeLabel = new JLabel("Tutor or tutee?");
+        tutorTuteeGroup = new ButtonGroup();
+        tutorButton = new JRadioButton("Tutor");
+        tuteeButton = new JRadioButton("Tutee");
+        tutorTuteeGroup.add(tutorButton);
+        tutorTuteeGroup.add(tuteeButton);
+        
+        // days free
+        daysFreeLabel = new JLabel("Days Free:");
+        day = new JCheckBox[DAY.length];
+        for (int i = 0; i < DAY.length; i++)
+        {
+            day[i] = new JCheckBox(DAY[i]);
+        } // end of for (int i = 0; i < DAY.length; i++)
+                
+        // courses
+        coursesLabel = new JLabel("Courses:");
+        coursesLabel2 = new JLabel("(to tutor or be tutored in)");
+        course = new JComboBox[numberOfCourses];
+        course[0] = new JComboBox(COURSE);
+        addButton = new JButton("+");
+        addButton.addActionListener(this);
+        
+        // other
+        edit = new JLabel("Please edit your form and try again.");
+        submitButton = new JButton("Submit");
+        submitButton.addActionListener(this);
+        edit.setVisible(false);
+    } // end of method createComponents()
+    
+    private void addComponents()
+    {
+        add(firstNameLabel);
+        add(firstNameField);
+        add(lastNameLabel);
+        add(lastNameField);
+        add(genderLabel);
+        add(maleButton);
+        add(femaleButton);
+        add(studentNumberLabel);
+        add(studentNumberField);
+        add(teacherLabel);
+        add(teacherField);
+        add(emailLabel);
+        add(emailField);
+        add(gradeLabel);
+        for (int i = 0; i < 4; i++)
+        {
+            add(gradeButton[i]);
+        } // end of for (int i = 0; i < 4; i++)
+        add(tutorTuteeLabel);
+        add(tutorButton);
+        add(tuteeButton);
+        add(daysFreeLabel);
+        for (int i = 0; i < DAY.length; i++)
+        {
+            add(day[i]);
+        } // end of or (int i = 0; i < DAY.length; i++)
+        add(coursesLabel);
+        add(coursesLabel2);
+        add(course[0]);
+        add(addButton);
+        add(edit);
+        add(submitButton);
+    } // end of method addComponents()
+    
+    private void layoutComponents()
+    {
+        // name
+        layout.putConstraint(LEFT, firstNameField, LEFT_OF_TEXTFIELD, LEFT, this);
+        layout.putConstraint(TOP, firstNameField, 5, TOP, this);
+        layout.putConstraint(TOP, firstNameLabel, 5, TOP, this);
+        layout.putConstraint(RIGHT, firstNameLabel, -4, LEFT, firstNameField);
+
+        layout.putConstraint(LEFT, lastNameField, LEFT_OF_TEXTFIELD, LEFT, this);
+        layout.putConstraint(TOP, lastNameField, 5, BOT, firstNameField);        
+        layout.putConstraint(TOP, lastNameLabel, 0, TOP, lastNameField);
+        layout.putConstraint(RIGHT, lastNameLabel, 0, RIGHT, firstNameLabel);
+        
+        // gender
+        layout.putConstraint(RIGHT, genderLabel, 0, RIGHT, firstNameLabel);
+        layout.putConstraint(TOP, genderLabel, 12, BOT, lastNameLabel);
+        layout.putConstraint(LEFT, maleButton, 5, RIGHT, genderLabel);
+        layout.putConstraint(TOP, maleButton, 5, BOT, lastNameField);
+        layout.putConstraint(LEFT, femaleButton, 5, RIGHT, maleButton);
+        layout.putConstraint(TOP, femaleButton, 5, BOT, lastNameField);
+        
+        // other personal
+        layout.putConstraint(LEFT, studentNumberField, LEFT_OF_TEXTFIELD, LEFT, this);
+        layout.putConstraint(TOP, studentNumberField, 5, BOT, maleButton);        
+        layout.putConstraint(TOP, studentNumberLabel, 0, TOP, studentNumberField);
+        layout.putConstraint(RIGHT, studentNumberLabel, 0, RIGHT, firstNameLabel);
+        
+        layout.putConstraint(LEFT, teacherField, LEFT_OF_TEXTFIELD, LEFT, this);
+        layout.putConstraint(TOP, teacherField, 5, BOT, studentNumberField);        
+        layout.putConstraint(TOP, teacherLabel, 0, TOP, teacherField);
+        layout.putConstraint(RIGHT, teacherLabel, 0, RIGHT, firstNameLabel);
+        
+        layout.putConstraint(LEFT, emailField, LEFT_OF_TEXTFIELD, LEFT, this);
+        layout.putConstraint(TOP, emailField, 5, BOT, teacherField);        
+        layout.putConstraint(TOP, emailLabel, 0, TOP, emailField);
+        layout.putConstraint(RIGHT, emailLabel, 0, RIGHT, firstNameLabel);
+        
+        // grade
+        layout.putConstraint(RIGHT, gradeLabel, 0, RIGHT, firstNameLabel);
+        layout.putConstraint(TOP, gradeLabel, 12, BOT, emailLabel);
+        for (int i = 0; i < 4; i++)
+        {
+            if (i == 0)
+            {
+                layout.putConstraint(LEFT, gradeButton[i], 5, RIGHT, gradeLabel);
+                layout.putConstraint(TOP, gradeButton[i], 5, BOT, emailField);
+            }
+            else
+            {
+                layout.putConstraint(LEFT, gradeButton[i], 5, RIGHT, gradeButton[i - 1]);
+                layout.putConstraint(TOP, gradeButton[i], 5, BOT, emailField);
+            } // end of if (i == 0)
+        } // end of for (int i = 0; i < 4; i++)
+        
+        // tutor or tutee
+        layout.putConstraint(RIGHT, tutorTuteeLabel, 0, RIGHT, firstNameLabel);
+        layout.putConstraint(TOP, tutorTuteeLabel, 25, BOT, gradeLabel);
+        layout.putConstraint(LEFT, tutorButton, 5, RIGHT, tutorTuteeLabel);
+        layout.putConstraint(TOP, tutorButton, -4, TOP, tutorTuteeLabel);
+        layout.putConstraint(LEFT, tuteeButton, 5, RIGHT, tutorButton);
+        layout.putConstraint(TOP, tuteeButton, -4, TOP, tutorTuteeLabel);
+        
+        // days free
+        layout.putConstraint(RIGHT, daysFreeLabel, 0, RIGHT, firstNameLabel);
+        layout.putConstraint(TOP, daysFreeLabel, 2, TOP, day[0]);
+        for (int i = 0; i < DAY.length; i++)
+        {
+            if (i == 0)
+            {
+                layout.putConstraint(LEFT, day[i], 0, LEFT, tutorButton);
+                layout.putConstraint(TOP, day[i], 2, BOT, tutorButton);
+            }
+            else 
+            {
+                layout.putConstraint(LEFT, day[i], 5, RIGHT, day[i - 1]);
+                layout.putConstraint(TOP, day[i], 0, TOP, day[0]);
+            } // end of if (i == 0)
+        } // end of for (int i = 0; i < DAY.length; i++) 
+        
+        // courses
+        layout.putConstraint(LEFT, course[0], LEFT_OF_TEXTFIELD, LEFT, this);
+        layout.putConstraint(TOP, course[0], 5, BOT, day[0]);    
+        layout.putConstraint(TOP, coursesLabel, 8, BOT, day[0]);
+        layout.putConstraint(RIGHT, coursesLabel, 0, RIGHT, firstNameLabel);
+        layout.putConstraint(TOP, coursesLabel2, 0, BOT, coursesLabel);
+        layout.putConstraint(RIGHT, coursesLabel2, 0, RIGHT, coursesLabel);
+        
+        // add button next to the last course
+        layout.putConstraint(TOP, addButton, 0, TOP, course[course.length - 1]);
+        layout.putConstraint(LEFT, addButton, 50, RIGHT, course[course.length - 1]);
+        
+        // submit button
+        layout.putConstraint(LEFT, submitButton, 0, LEFT, this);
+        layout.putConstraint(BOT, submitButton, 500, BOT, this);
+        // edit prompt
+        layout.putConstraint(TOP, edit, 2, TOP, submitButton);
+        layout.putConstraint(LEFT, edit, 5, RIGHT, submitButton);
+    } // end of method layoutComponents()
+    
+    /*
+     * unused / not working methods
+     */
+    
+    /*
+    private void hideComponents()
+    {
+        firstNameLabel.setVisible(false);// name
+        firstNameField.setVisible(false);
+        lastNameLabel.setVisible(false);
+        lastNameField.setVisible(false);
+        genderLabel.setVisible(false);// gender
+        maleButton.setVisible(false);
+        femaleButton.setVisible(false);
+        studentNumberLabel.setVisible(false);// other personal
+        studentNumberField.setVisible(false);
+        teacherLabel.setVisible(false);
+        teacherField.setVisible(false);
+        emailLabel.setVisible(false);
+        emailField.setVisible(false);
+        gradeLabel.setVisible(false);// grade
+        for (int i = 0; i < 4; i++)
+        {
+            gradeButton[i].setVisible(false);
+        }         
+        tutorTuteeLabel.setVisible(false);// tutor or tutee
+        tutorButton.setVisible(false);
+        tuteeButton.setVisible(false);
+        daysFreeLabel.setVisible(false);// days free
+        for (int i = 0; i < DAY.length; i++)
+        {
+            day[i].setVisible(false);
+        }
+        coursesLabel.setVisible(false);// courses
+        coursesLabel2.setVisible(false);
+        for (int i = 0; i < course.length; i++)
+        {
+            course[i].setVisible(false);
+        }
+        for (int i = 0; i < course.length; i++)
+        {
+            minusButton[i].setVisible(false);
+        }
+        addButton.setVisible(false);
+        addButton = null;
+        edit.setVisible(false);
+        submitButton.setVisible(false);
+        submitButton = null;
+        //repaint();
+        //revalidate();
+        
+        // format for the student number field (not working)
+        NumberFormatter numberFormatter = new NumberFormatter(format);
+        numberFormatter.setValueClass(Integer.class);// only integer student numbers
+        numberFormatter.setAllowsInvalid(true);
+        //format.setGroupingUsed(false);
+        numberFormatter.setMaximum(999999999);// max. 9 digits
+        numberFormatter.setMinimum(0);
+    }*/   
+} // end of class TutoringRegistration

@@ -1,0 +1,55 @@
+First I will show the applet (unfortunately, it has not been deployed online).
+
+Gender unselected.
+
+No days free selected.
+ 
+Some text fields blank.
+
+Adding/removing of combo boxes.
+
+Repeated course.
+
+Now the session program.
+
+Here are the databases (they will be changing)
+
+Wrong password then right password.
+
+No session started.
+
+Start session.
+
+Review the session - both not present.
+
+Sign in the tutor.
+
+Try again.
+
+Review session - only tutee not present.
+
+Check tutor database.
+
+Add a new tutor (already registered).
+
+Add a new tutor.
+
+View all tutors.
+
+Check database.
+
+Add a tutee.
+
+Check database
+
+Make a match with the newly added tutor/tutee.
+
+Check database.
+
+View all the matches. 
+
+Delete the newly created match.
+
+Check database.
+
+End.

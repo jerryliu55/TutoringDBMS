@@ -1,0 +1,239 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Scanner;
+/**
+ * A representation of a tutor in a peer tutoring database.
+ * 
+ * @author Jerry Liu
+ * @version 1.0 2015-01-27
+ */
+public class Tutor extends Student
+{
+    /*
+     * class fields
+     */
+    public static final int INDEX_NUMBER = 3;
+
+    /*
+     * constructors
+     */
+
+    /**
+     * Creates a new tutor based on a student number.
+     */
+    public Tutor(int number)
+    {
+        super(number, true);
+    } // end of constructor Tutor(int number)
+
+    /*
+     * static methods
+     */
+    
+    /**
+     * Shows all tutors 20 at a time.
+     */
+    public static void showTutors()
+    {
+        Scanner scanner = new Scanner(System.in);
+        // show how many at a time?
+        int shown = TutoringDBMS.SHOW;
+        if (numberOfTutors() < shown)
+            shown = numberOfTutors();
+            
+        System.out.println("CURRENT TUTORS (showing " + shown + " of " + numberOfTutors() + "):");      
+        try
+        {
+            BufferedReader reader = new BufferedReader(new FileReader(Student.fileTutor));
+            String input = "";
+            String[] data;
+            
+            // show all tutees
+            Tutor current;
+            String output = "";
+            int count = 0;
+            int index = 1;
+            while ((input = reader.readLine()) != null)
+            {
+                // 20 at a time
+                if (count == TutoringDBMS.SHOW)
+                {
+                    count = 0;
+                    System.out.println("Press ENTER to show more.");
+                    scanner.next();
+                } // end of if (count == TutoringDBMS.SHOW)
+                count++;
+                data = input.split("\\|");
+                
+                current = new Tutor(Integer.parseInt(data[INDEX_NUMBER]));
+                
+                // specific output for each tutor
+                System.out.print(index + ". ");
+                System.out.print(current.getFirstName() + " " + current.getLastName());
+                System.out.print(" free on " + new String(current.getDaysFree()));
+                System.out.print(" for " + current.getCourses());
+                System.out.println("");
+                index++;
+            } // end of while ((input = reader.readLine()) != null)
+            
+        }
+        catch (IOException error)
+        {
+        
+        } // end of try-catch block
+    } // end of method showTutors()
+    
+    /**
+     * Presents prompts and information to delete a tutor from the system.
+     */
+    public static void deleteTutor()
+    {
+        // show tutors
+        Scanner scanner = new Scanner(System.in);
+        showTutors();
+        System.out.print("Delete which tutor? (0 to exit) ");
+        
+        int selection = -1;
+        String input = "";
+        do
+        {
+            input = scanner.nextLine();
+            try
+            {
+                selection = Integer.parseInt(input);
+            }
+            catch (NumberFormatException error)
+            {} // end of try-catch block 
+            
+        }
+        while (selection < 0 || selection > Tutor.numberOfTutors());
+        
+        if (selection == 0) return;
+        
+        // read all tutors into array
+        try
+        {
+            BufferedReader reader = new BufferedReader(new FileReader(Student.fileTutor));
+            String[] line = new String[numberOfTutors()];
+            for (int i = 0; i < line.length; i++)
+            {
+                line[i] = reader.readLine();
+            } // end of for (int i = 0; i < line.length; i++)
+            reader.close();
+            // write all, exclude the deleted one
+            PrintWriter writer = new PrintWriter(Student.fileTutor);
+            for (int i = 0; i < line.length; i++)
+            {
+                if (i != selection -1)
+                    writer.println(line[i]);
+            } // end of for (int i = 0; i < line.length; i++)
+            writer.close();
+        }
+        catch (IOException error)
+        {} // end of try-catch block
+        System.out.println("Deletion successful.");
+    } // end of method deleteTutor()
+    
+    /**
+     * Shows only the selected tutors as specified.
+     * 
+     * @tutor the array of tutors to be shown
+     */
+    public static void showSelectedTutors(Student[] tutor)
+    {
+        Scanner scanner = new Scanner(System.in);
+        // show how many at a time?
+        int shown = TutoringDBMS.SHOW;
+        if (tutor.length < shown)
+            shown = tutor.length;
+            
+        System.out.println("COMPATIBLE TUTORS (showing " + shown + " of " + tutor.length + "):");      
+        try
+        {
+            BufferedReader reader = new BufferedReader(new FileReader(Student.fileTutor));
+            String input = "";
+            String[] data;
+            
+            // show compatible tutors
+            String output = "";
+            int count = 0;
+            int index = 0;
+            while (index != tutor.length - 1)
+            {
+                // 20 at a time
+                if (count == TutoringDBMS.SHOW)
+                {
+                    count = 0;
+                    System.out.println("Press ENTER to show more.");
+                    scanner.next();
+                } // end of if (count == TutoringDBMS.SHOW)
+                count++;
+                data = input.split("\\|");
+                // specific output for each tutor
+                System.out.print(index + 1 + ". ");
+                System.out.print(tutor[index].getFirstName() + " " + tutor[index].getLastName());
+                System.out.print(" free on " + new String(tutor[index].getDaysFree()));
+                System.out.print(" for " + tutor[index].getCourses());
+                System.out.println("");
+            } // end of while (index != tutor.length - 1)
+            
+        }
+        catch (IOException error)
+        {
+        
+        } // end of try-catch block
+    } // end of method showSelectedTutors(Student[] tutor)
+    
+    /**
+     * Gets all registered tutors.
+     * 
+     * @return an array of all registered tutors
+     */
+    public static Student[] getAllTutors()
+    {
+        Student[] tutor = new Student[numberOfTutors()];
+        String[] data;
+        int index = 0;
+        try
+        {
+            BufferedReader reader = new BufferedReader(new FileReader(Student.fileTutor));
+            String input = "";
+            while ((input = reader.readLine()) != null)
+            {
+                data = input.split("\\|");
+                tutor[index] = new Student(Integer.parseInt(data[INDEX_NUMBER]), true);
+                index++;
+            } // end of while ((input = reader.readLine()) != null)
+            reader.close();
+        }
+        catch (IOException error)
+        {} // end of try-catch block
+        return tutor;
+    } // end of method getAllTutors()
+    
+    /**
+     * Gets the number of registered tutors.
+     * 
+     * @return the number of registered tutors
+     */
+    public static int numberOfTutors()
+    {
+        int count = 0;
+        try
+        {
+            BufferedReader reader = new BufferedReader(new FileReader(Student.fileTutor));
+            String input = "";
+            // count number of lines
+            while ((input = reader.readLine()) != null)
+            {
+                count++;
+            } // end of while ((input = reader.readLine()) != null)
+            reader.close();
+        }
+        catch (IOException error)
+        {} // end of try-catch block
+        return count;
+    } // end of method numberOfTutees()
+} // end of class Tutor
